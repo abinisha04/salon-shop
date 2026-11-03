@@ -1,3 +1,4 @@
+
 import { getApps, initializeApp, cert } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
 import { getFirestore } from "firebase-admin/firestore";
@@ -13,5 +14,12 @@ const firebaseAdminApp =
         }),
       });
 
-export const messaging = getMessaging(firebaseAdminApp);
-export const adminDb = getFirestore(firebaseAdminApp);
+const admin = {
+  messaging: () => getMessaging(firebaseAdminApp),
+  firestore: () => getFirestore(firebaseAdminApp),
+};
+
+export default admin;
+
+export const messaging = admin.messaging();
+export const adminDb = admin.firestore();
