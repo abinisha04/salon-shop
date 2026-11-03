@@ -19,7 +19,9 @@ const admin = {
   firestore: () => getFirestore(firebaseAdminApp),
 };
 
+// Default export for existing API routes
 export default admin;
 
-export const messaging = admin.messaging();
-export const adminDb = admin.firestore();
+// Named exports for other files
+export const messaging = getMessaging(firebaseAdminApp);
+export const adminDb = getFirestore(firebaseAdminApp);
