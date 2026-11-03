@@ -79,7 +79,7 @@ export default function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState("active");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [groomerFilter, setGroomerFilter] = useState("all");
-  const [dayFilter, setDayFilter] = useState("today");
+  const [dayFilter, setDayFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
 
   // ✅ FIX: useRef to hold latest appointments for Firestore callback
