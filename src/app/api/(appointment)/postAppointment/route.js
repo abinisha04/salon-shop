@@ -133,7 +133,7 @@ import Appointment from "@/models/appointment/schema";
 import { checkAuthKey } from "@/lib/authkey";
 
 // 🔔 FCM
-import admin from "@/lib/firebaseAdmin";
+import { messaging } from "@/lib/firebaseAdmin";
 import Shop from "@/models/shop/schema";
 import User from "@/models/user/schema";
 
@@ -243,7 +243,7 @@ try {
   // console.log("👤 User name:", user?.name);
 
   if (shop?.fcmToken) {
-    const result = await admin.messaging().send({
+    const result = await messaging.send({
       token: shop.fcmToken,
       data: {
         title: "📅 New Appointment",
