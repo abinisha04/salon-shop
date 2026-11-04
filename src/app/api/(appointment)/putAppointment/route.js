@@ -255,67 +255,82 @@ export async function PUT(req) {
       // console.error("Firestore status sync failed:", error);
     }
     // 🔔 SEND PUSH NOTIFICATION TO USER (ON CANCEL / COMPLETE)
-    
+
     // 🔔 SEND PUSH NOTIFICATION TO USER
     try {
-      if (
-        ["confirmed", "cancelled", "completed"].includes(finalStatus)
-      ) {
+      if (["confirmed", "cancelled", "completed"].includes(finalStatus)) {
         // 1. Get customer FCM token
-        const user = await User.findById(
-          updatedAppointment.userId
-        ).select("fcmToken");
+        const user = await User.findById(updatedAppointment.userId).select(
+          "fcmToken",
+        );
 
         const customerToken = user?.fcmToken;
 
+        console.log("Database Customer FCM Token:", customerToken);
+
         if (!customerToken) {
-          // console.log("Customer FCM token not found");
+          console.log("Customer FCM token not found");
         } else {
           // 2. Format appointment date and time
           const bookingTime = formatDateTime(
             updatedAppointment.date,
-            updatedAppointment.time
+            updatedAppointment.time,
           );
 
           // 3. Prepare notification content
           let title = "Appointment Update";
-          let body = "";
+          let notificationBody = "";
 
           if (finalStatus === "confirmed") {
             title = "✅ Appointment Confirmed";
-            body = `Your appointment on ${bookingTime} has been confirmed`;
+            notificationBody = `Your appointment on ${bookingTime} has been confirmed`;
           } else if (finalStatus === "cancelled") {
             title = "❌ Appointment Cancelled";
-            body = `Your appointment on ${bookingTime} was cancelled`;
+            notificationBody = `Your appointment on ${bookingTime} was cancelled`;
           } else if (finalStatus === "completed") {
             title = "✅ Appointment Completed";
-            body = `Your appointment on ${bookingTime} is completed`;
+            notificationBody = `Your appointment on ${bookingTime} is completed`;
           }
 
-          // 4. Send data-only FCM notification
-          const response = await messaging.send({
+          // 4. Prepare FCM payload
+          const messagePayload = {
             token: customerToken,
             data: {
               title,
-              body,
+              body: notificationBody,
               appointmentId: updatedAppointment._id.toString(),
               status: finalStatus,
               bookingTime,
               type: "APPOINTMENT_STATUS",
               url: "/pages/bookingHistory",
             },
-          });
+          };
 
-          // console.log("🔔 Customer notification sent:", response);
+          // 5. Check token
+          console.log(
+            "Customer FCM Token:",
+            `${customerToken.slice(0, 15)}...`,
+          );
+
+          // 6. Check payload before sending
+          console.log(
+            "Notification Payload:",
+            JSON.stringify(messagePayload.data, null, 2),
+          );
+
+          // 7. Send FCM notification
+          const response = await messaging.send(messagePayload);
+
+          // 8. Check Firebase response
+          console.log("FCM Notification Successfully Sent!");
+          console.log("Firebase Message ID:", response);
         }
       }
     } catch (notificationError) {
-      // console.error(
-      //   "❌ Customer notification failed:",
-      //   notificationError.message
-      // );
+      console.error("Customer FCM Notification Failed:");
+      console.error("Error Code:", notificationError.code);
+      console.error("Error Message:", notificationError.message);
     }
-
 
     // 🔥 Update in Firebase (if firebaseId provided)
     if (firebaseId) {
