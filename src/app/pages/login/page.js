@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { app } from "@/lib/firebase";
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -80,6 +83,7 @@ export default function LoginPage() {
   }
 
   // Verify OTP API
+  // Verify OTP API
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
@@ -89,6 +93,56 @@ export default function LoginPage() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
 
+      // 1. Check browser support
+      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        throw new Error("This browser does not support push notifications.");
+      }
+
+      const supported = await isSupported();
+
+      if (!supported) {
+        throw new Error("Firebase messaging is not supported in this browser.");
+      }
+
+      // 2. Request notification permission if needed
+      let permission = Notification.permission;
+
+      if (permission === "default") {
+        permission = await Notification.requestPermission();
+      }
+
+      if (permission !== "granted") {
+        throw new Error("Please allow notifications to continue.");
+      }
+
+      // Register service worker in the current browser
+      const swRegistration = await navigator.serviceWorker.register(
+        "/firebase-messaging-sw.js",
+      );
+
+      // Wait until service worker is ready
+      await navigator.serviceWorker.ready;
+
+      // 4. Get Firebase messaging instance
+      const messaging = getMessaging(app);
+
+      // 5. Generate current device FCM token
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+
+      if (!vapidKey) {
+        throw new Error("Firebase VAPID key is missing.");
+      }
+
+      const currentFcmToken = await getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: swRegistration,
+      });
+
+      if (!currentFcmToken) {
+        throw new Error("Unable to generate FCM token.");
+      }
+
+      // 6. Verify OTP and update FCM token through existing API
       const res = await fetch("/api/proxy", {
         method: "POST",
         headers: {
@@ -98,34 +152,31 @@ export default function LoginPage() {
           endpoint: "verifyOtp",
           email: normalizedEmail,
           otp: otp,
+          fcmToken: currentFcmToken,
         }),
       });
 
       const result = await res.json();
 
-      if (!res.ok) {
+      if (!res.ok || !result.success) {
         setError(result.message || "OTP verification failed.");
         return;
       }
 
-      if (result.success) {
-        // Store Shop login details
-        localStorage.setItem(
-          "shop",
-          JSON.stringify({
-            email: normalizedEmail,
-            isLoggedIn: true,
-          }),
-        );
+      // 7. Store Shop login details
+      localStorage.setItem(
+        "shop",
+        JSON.stringify({
+          email: normalizedEmail,
+          isLoggedIn: true,
+        }),
+      );
 
-        // Navigate to Shop home
-        router.replace("/pages/home");
-      } else {
-        setError(result.message || "OTP verification failed.");
-      }
+      // 8. Navigate to Shop home
+      router.replace("/pages/home");
     } catch (error) {
-      // console.error("Shop OTP verification error:", error);
-      setError("Something went wrong. Please try again.");
+      console.error("Shop OTP verification error:", error);
+      setError(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

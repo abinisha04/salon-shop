@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getMessaging, isSupported } from "firebase/messaging";
 
 // ✅ Firebase config from env
 const firebaseConfig = {
@@ -22,5 +23,16 @@ const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 
 // ✅ Firestore
 const db = getFirestore(app);
+
+// Client-side FCM messaging
+export const getMessagingInstance = async () => {
+  if (typeof window === "undefined") return null;
+
+  const supported = await isSupported();
+
+  if (!supported) return null;
+
+  return getMessaging(app);
+};
 
 export { app, analytics, db };
