@@ -157,7 +157,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error("Shop OTP verification error:", error);
+    // console.error("Shop OTP verification error:", error);
 
     return Response.json(
       {

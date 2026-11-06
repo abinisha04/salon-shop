@@ -13,7 +13,7 @@ export async function getShopFCMToken() {
     }
 
     if (!VAPID_KEY) {
-      console.error("Firebase VAPID key is missing");
+      // console.error("Firebase VAPID key is missing");
       return null;
     }
 
@@ -43,7 +43,7 @@ export async function getShopFCMToken() {
     return token || null;
 
   } catch (error) {
-    console.error("Shop FCM token error:", error);
+    // console.error("Shop FCM token error:", error);
     return null;
   }
 }

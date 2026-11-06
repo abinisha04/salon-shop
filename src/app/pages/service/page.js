@@ -632,8 +632,6 @@ export default function ServicesPage() {
       </div>
 
       {/* Services Grid */}
-
-      {/* Services Grid */}
       {filteredServices.length === 0 ? (
         <div className="text-center text-gray-400 mt-20">No services found</div>
       ) : (

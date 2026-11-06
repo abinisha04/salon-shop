@@ -266,10 +266,10 @@ export async function PUT(req) {
 
         const customerToken = user?.fcmToken;
 
-        console.log("Database Customer FCM Token:", customerToken);
+        // console.log("Database Customer FCM Token:", customerToken);
 
         if (!customerToken) {
-          console.log("Customer FCM token not found");
+          // console.log("Customer FCM token not found");
         } else {
           // 2. Format appointment date and time
           const bookingTime = formatDateTime(
@@ -307,29 +307,29 @@ export async function PUT(req) {
           };
 
           // 5. Check token
-          console.log(
-            "Customer FCM Token:",
-            `${customerToken.slice(0, 15)}...`,
-          );
+          // console.log(
+          //   "Customer FCM Token:",
+          //   `${customerToken.slice(0, 15)}...`,
+          // );
 
           // 6. Check payload before sending
-          console.log(
-            "Notification Payload:",
-            JSON.stringify(messagePayload.data, null, 2),
-          );
+          // console.log(
+          //   "Notification Payload:",
+          //   JSON.stringify(messagePayload.data, null, 2),
+          // );
 
           // 7. Send FCM notification
           const response = await messaging.send(messagePayload);
 
           // 8. Check Firebase response
-          console.log("FCM Notification Successfully Sent!");
-          console.log("Firebase Message ID:", response);
+          // console.log("FCM Notification Successfully Sent!");
+          // console.log("Firebase Message ID:", response);
         }
       }
     } catch (notificationError) {
-      console.error("Customer FCM Notification Failed:");
-      console.error("Error Code:", notificationError.code);
-      console.error("Error Message:", notificationError.message);
+      // console.error("Customer FCM Notification Failed:");
+      // console.error("Error Code:", notificationError.code);
+      // console.error("Error Message:", notificationError.message);
     }
 
     // 🔥 Update in Firebase (if firebaseId provided)

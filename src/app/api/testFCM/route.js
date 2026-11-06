@@ -22,11 +22,11 @@ export async function POST() {
       },
     };
 
-    console.log("Sending notification from Shop to Customer...");
+    // console.log("Sending notification from Shop to Customer...");
 
     const response = await messaging.send(message);
 
-    console.log("Customer FCM Message ID:", response);
+    // console.log("Customer FCM Message ID:", response);
 
     return NextResponse.json({
       success: true,
@@ -34,7 +34,7 @@ export async function POST() {
       messageId: response,
     });
   } catch (error) {
-    console.error("Shop to Customer FCM Error:", error);
+    // console.error("Shop to Customer FCM Error:", error);
 
     return NextResponse.json(
       {
